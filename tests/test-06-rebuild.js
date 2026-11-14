@@ -2,7 +2,26 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const zlib = require('zlib');
 const { buildAll } = require('../tools/build-fonts');
+
+// [Audit fix, Kehai Interim 2026-11-13] WOFF tables are zlib-compressed, and different zlib builds
+// emit different (equally valid) compressed bytes for the same input. Byte-comparing a .woff
+// rebuilt on another machine therefore failed on content-identical files. WOFFs are now compared
+// by header + table directory + DECOMPRESSED table data; reproducibility on one machine (b1 vs b2)
+// is still byte-exact for every file.
+function woffContent(buf) {
+  const n = buf.readUInt16BE(12);
+  const parts = [buf.slice(0, 44).toString('hex').replace(/^(.{16}).{8}/, '$1')]; // WOFF header minus its 'length' field (bytes 8..11), which depends on compression
+  for (let i = 0; i < n; i++) {
+    const o = 44 + i * 20;
+    const tag = buf.toString('ascii', o, o + 4), off = buf.readUInt32BE(o + 4), cl = buf.readUInt32BE(o + 8), ol = buf.readUInt32BE(o + 12), cs = buf.readUInt32BE(o + 16);
+    let d = buf.slice(off, off + cl); if (cl < ol) d = zlib.inflateSync(d);
+    parts.push(tag + ':' + ol + ':' + cs + ':' + d.toString('hex'));
+  }
+  return parts.join('|');
+}
+function sameContent(f, a, b) { return f.endsWith('.woff') ? woffContent(a) === woffContent(b) : a.equals(b); }
 
 const DERIVED_FILES = [
   'consciousnode-sans-8x8.hex',
@@ -33,7 +52,7 @@ async function run() {
     const bShipped = fs.readFileSync(path.join(shippedDir, f));
     const b1 = fs.readFileSync(path.join(tmp1, f));
     const b2 = fs.readFileSync(path.join(tmp2, f));
-    if (!bShipped.equals(b1) || !b1.equals(b2)) {
+    if (!sameContent(f, bShipped, b1) || !b1.equals(b2)) {
       mismatches++;
       console.log('  Mismatch in', f);
     }
