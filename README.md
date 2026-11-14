@@ -22,7 +22,7 @@ They're pixel fonts, so they're crispest at their native size and whole multiple
 ## Things to try (no experience needed)
 1. **Edit a letter.** Open the Forge, pick ConsciousNode Sans → `A`, and click a few squares. The live preview under the editor changes as you click. That's all a bitmap font is: a grid of on/off squares per letter.
 2. **Watch the shadow appear on its own.** Switch the editor to Times New Thesuramos and turn on one ink square. A shadow trit appears down-right of it by itself. The shadow isn't drawn; it's computed from the ink, which is why the tests can check every shadow trit exactly.
-3. **Make your own version.** After editing, press *Export 4 .ttf* and install your file. You've made a font.
+3. **Make your own version.** After editing, type your font's names (and your own copyright line) into *Your font's names*, press *Export 4 .ttf*, and install your files. You've made a font, and it carries your name, so it never clashes with the CNSW fonts on the same computer.
 4. **Spot the look-alikes.** The specimen has a line of `O0 Il1| S5 B8`. Each pair must differ by at least 3 pixels (test 3 measures it). Find the pixels that tell `I` and `l` apart.
 5. **Count in trits.** In `fonts/times-new-thesuramos-9x9.tryte.asm`, each number is one row of a letter. Turn one into trits by repeatedly taking the remainder by 3, treating 2 as −1 and carrying 1. You get the row's 9 trits back.
 

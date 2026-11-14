@@ -546,14 +546,16 @@
     // 8. name
     const psName = familyName.replace(/[^A-Za-z0-9-]/g, '');
     const nameStrings = [
-      [0, '© 2026 ConsciousNode SoftWorks'],
+      // [Kehai 2026-11-14] copyright / license / unique-ID prefix are options so other makers can sign their own fonts;
+      // defaults are the shipped CNSW values, so the official fonts rebuild byte-identically.
+      [0, opts.copyright || '© 2026 ConsciousNode SoftWorks'],
       [1, familyName],
       [2, 'Regular'],
-      [3, `CNSW:${psName}:2026`],
+      [3, `${opts.idPrefix || 'CNSW'}:${psName}:2026`],
       [4, familyName],
       [5, 'Version 1.0'],
       [6, psName],
-      [13, 'MIT License'],
+      [13, opts.license || 'MIT License'],
     ];
     const encodedStrings = nameStrings.map(([id, str]) => {
       const bytes = [];

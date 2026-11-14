@@ -171,6 +171,19 @@ canvas.pixel-canvas {
   </div>
 </div>
 
+<!-- [Kehai 2026-11-14] Name your fonts: exported .ttf/.woff carry these names, so a font you make is yours, not "ConsciousNode Sans". -->
+<div class="panel" id="naming-panel" style="margin:0 16px 12px">
+  <h2>Your font's names (used by Export .ttf / .woff)</h2>
+  <div class="btn-row" style="flex-wrap:wrap;gap:8px">
+    <label>8x8 font <input id="name-sans" value="ConsciousNode Sans" size="22"></label>
+    <label>8x16 font <input id="name-serif" value="CNSW Serif" size="18"></label>
+    <label>9x9 trit font <input id="name-thes" value="Times New Thesuramos" size="22"></label>
+    <label>Copyright <input id="name-copyright" value="© 2026 ConsciousNode SoftWorks" size="30"></label>
+    <label>License <input id="name-license" value="MIT License" size="14"></label>
+  </div>
+  <div class="status-line">Made your own font? Give it your own name before exporting, so it never clashes with the CNSW fonts on the same computer. The shadow companion is named "&lt;9x9 name&gt; Shadow".</div>
+</div>
+
 <div class="layout">
   <div class="panel">
     <h2>Glyph Editor</h2>
@@ -501,12 +514,26 @@ ${readerJs}
     setStatus('Exported times-new-thesuramos-9x9.tryte.asm');
   });
 
+  // [Kehai 2026-11-14] names come from the "Your font's names" panel (defaults = the CNSW names).
+  function nameOf(id, fallback) {
+    const el = document.getElementById(id);
+    const v = el ? el.value.replace(/[^\x20-\x7E\u00A9]/g, '').trim().slice(0, 48) : '';
+    return v || fallback;
+  }
+  function slugOf(name) { return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'font'; }
   function getTargets() {
+    const sans = nameOf('name-sans', 'ConsciousNode Sans');
+    const serif = nameOf('name-serif', 'CNSW Serif');
+    const thes = nameOf('name-thes', 'Times New Thesuramos');
+    const copyright = nameOf('name-copyright', '© 2026 ConsciousNode SoftWorks');
+    const license = nameOf('name-license', 'MIT License');
+    const official = sans === 'ConsciousNode Sans' && serif === 'CNSW Serif' && thes === 'Times New Thesuramos';
+    const extra = { copyright, license, idPrefix: official ? 'CNSW' : slugOf(sans).slice(0, 12).toUpperCase() };
     return [
-      { font: fontData.fonts.sans, slug: 'consciousnode-sans', opts: { mode: 'ink', familyName: 'ConsciousNode Sans' } },
-      { font: fontData.fonts.serif, slug: 'cnsw-serif', opts: { mode: 'ink', familyName: 'CNSW Serif' } },
-      { font: fontData.fonts.thesuramos, slug: 'times-new-thesuramos', opts: { mode: 'ink', familyName: 'Times New Thesuramos' } },
-      { font: fontData.fonts.thesuramos, slug: 'times-new-thesuramos-shadow', opts: { mode: 'shadow', familyName: 'Times New Thesuramos Shadow' } },
+      { font: fontData.fonts.sans, slug: slugOf(sans), opts: Object.assign({ mode: 'ink', familyName: sans }, extra) },
+      { font: fontData.fonts.serif, slug: slugOf(serif), opts: Object.assign({ mode: 'ink', familyName: serif }, extra) },
+      { font: fontData.fonts.thesuramos, slug: slugOf(thes), opts: Object.assign({ mode: 'ink', familyName: thes }, extra) },
+      { font: fontData.fonts.thesuramos, slug: slugOf(thes + ' shadow'), opts: Object.assign({ mode: 'shadow', familyName: thes + ' Shadow' }, extra) },
     ];
   }
 
